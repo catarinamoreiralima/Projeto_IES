@@ -1,4 +1,3 @@
-const STORAGE_KEY = "camarim-compras-data-v1";
 const SUPABASE_URL = "https://nmaftctgvulckprcxwkn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VSoB6vAcT9UTlFbu1aqaLw_nBHbvDF0";
 
@@ -70,7 +69,6 @@ const syncController = window.createSyncControllerFromModule?.({
   loadEvents,
   normalizeEvents,
   uniqueValues,
-  saveEventsToStorage: (events) => window.saveEventsToStorage?.(events) ?? localStorage.setItem(STORAGE_KEY, JSON.stringify(events)),
 }) ?? null;
 
 if (state.events.length > 0) {
@@ -878,19 +876,12 @@ function getShoppingGroupKey(row) {
 }
 
 function persistAndRender() {
-  window.saveEventsToStorage?.(state.events) ?? localStorage.setItem(STORAGE_KEY, JSON.stringify(state.events));
   render();
   syncController?.scheduleRemoteSync();
 }
 
 function loadEvents() {
-  return window.loadEventsFromStorage?.() ?? (() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch {
-      return [];
-    }
-  })();
+  return [];
 }
 
 function normalizeEvents(events) {

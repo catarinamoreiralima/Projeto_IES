@@ -12,41 +12,22 @@ export function attachDomHandlers({ state, els, actions }) {
     }
   }
 
-  // Persisted cooldown key to avoid hammering the OTP endpoint across reloads.
-  const COOLDOWN_KEY = 'camarim-auth-cooldown-v1';
-
-  function getCooldownUntil() {
-    try {
-      const raw = localStorage.getItem(COOLDOWN_KEY);
-      const ts = raw ? Number(raw) : 0;
-      return Number.isFinite(ts) ? ts : 0;
-    } catch {
-      return 0;
-    }
-  }
-
-  function setCooldownUntil(untilTs) {
-    try {
-      localStorage.setItem(COOLDOWN_KEY, String(untilTs));
-    } catch {}
-  }
-
+  let cooldownUntil = 0;
   function startCooldown(seconds) {
-    const until = Date.now() + Math.max(5, Number(seconds) || 60) * 1000;
-    setCooldownUntil(until);
+    cooldownUntil = Date.now() + Math.max(5, Number(seconds) || 60) * 1000;
     updateCooldownUi();
   }
 
   let cooldownInterval = null;
   function updateCooldownUi() {
     clearInterval(cooldownInterval);
-    const until = getCooldownUntil();
+    const until = cooldownUntil;
     if (!until || until <= Date.now()) {
       // clear state
       setSyncStatus('');
       // re-enable auth form buttons if they were disabled
       try { els.authForm.querySelectorAll('button, input[type=submit]').forEach(el => el.disabled = false); } catch {}
-      setCooldownUntil(0);
+      cooldownUntil = 0;
       return;
     }
 
@@ -55,19 +36,16 @@ export function attachDomHandlers({ state, els, actions }) {
 
     cooldownInterval = setInterval(() => {
       const now = Date.now();
-      const left = Math.ceil((getCooldownUntil() - now) / 1000);
+      const left = Math.ceil((cooldownUntil - now) / 1000);
       if (left <= 0) {
         clearInterval(cooldownInterval);
-        setCooldownUntil(0);
+        cooldownUntil = 0;
         updateCooldownUi();
         return;
       }
       setSyncStatus(`Limite de envio atingido. Tente novamente em ${left}s.`);
     }, 1000);
   }
-
-  // initialize any persisted cooldown on load
-  try { if (getCooldownUntil() > Date.now()) updateCooldownUi(); } catch {}
 
   const {
     getSupabaseClient,

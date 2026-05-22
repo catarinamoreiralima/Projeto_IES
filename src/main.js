@@ -1,5 +1,4 @@
 import * as utils from './utils.js';
-import * as persistence from './persistence.js';
 import * as state from './state.js';
 import * as rows from './rows.js';
 import * as render from './render.js';
@@ -14,10 +13,6 @@ window.formatCurrency = utils.formatCurrency;
 window.parseCurrency = utils.parseCurrency;
 window.slugify = utils.slugify;
 window.formatDate = utils.formatDate;
-
-window.STORAGE_KEY = persistence.STORAGE_KEY;
-window.loadEventsFromStorage = persistence.loadEventsFromStorage;
-window.saveEventsToStorage = persistence.saveEventsToStorage;
 
 window.normalizeEventsFromState = state.normalizeEvents;
 window.collectBuyersFromState = state.collectBuyers;

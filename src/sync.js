@@ -8,7 +8,6 @@ export function createSyncController({
   loadEvents,
   normalizeEvents,
   uniqueValues,
-  saveEventsToStorage,
 }) {
   let isRemoteLoading = false;
   let syncTimer = null;
@@ -154,19 +153,8 @@ export function createSyncController({
         locations: locationsResult.data ?? [],
       });
 
-      const localEvents = normalizeEvents(loadEvents());
-      if (remoteEvents.length === 0 && localEvents.length > 0 && window.confirm("O Supabase ainda está vazio. Deseja enviar os dados locais deste navegador para o banco?")) {
-        state.events = localEvents;
-        state.selectedEventId = state.events[0]?.id ?? null;
-        isRemoteLoading = false;
-        render();
-        await syncRemoteData();
-        return;
-      }
-
       state.events = remoteEvents;
       state.selectedEventId = state.events[0]?.id ?? null;
-      saveEventsToStorage(state.events);
       render();
       setSyncStatus("Dados sincronizados.");
     } catch (error) {
