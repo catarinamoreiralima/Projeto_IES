@@ -178,6 +178,13 @@ export function attachDomHandlers({ state, els, actions }) {
 
   els.eventForm.addEventListener("submit", (event) => {
     event.preventDefault();
+    const supabaseClient = getSupabaseClient();
+    const currentUser = getCurrentUser();
+    if (!supabaseClient || !currentUser) {
+      setSyncStatus("Você precisa estar conectado ao Supabase para criar um evento.");
+      return;
+    }
+
     const newEvent = {
       id: createId(),
       name: els.eventName.value.trim(),

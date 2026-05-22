@@ -26,6 +26,12 @@ export function createSyncController({
     els.authForm.classList.toggle("hidden", loggedIn);
     els.signOut.classList.toggle("hidden", !loggedIn);
     els.authStatus.textContent = loggedIn ? `Conectado como ${currentUser.email}` : "Entre para sincronizar com o Supabase.";
+
+    if (els.eventForm) {
+      els.eventForm.querySelectorAll("button, input, select, textarea").forEach((element) => {
+        element.disabled = !loggedIn;
+      });
+    }
   }
 
   async function completeSupabaseLogin() {
