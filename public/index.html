@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Camarim Compras</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">CC</div>
+          <div>
+            <h1>Camarim Compras</h1>
+            <p>Gestão de abastecimento</p>
+          </div>
+        </div>
+
+        <section class="panel auth-panel">
+          <form id="auth-form" class="compact-form">
+            <label>
+              Login
+              <input id="auth-email" type="email" placeholder="email@exemplo.com" required />
+            </label>
+            <label>
+              Senha
+              <input id="auth-password" type="password" placeholder="Sua senha" autocomplete="current-password" />
+            </label>
+            <div class="actions">
+              <button type="submit" class="primary-button" name="auth-mode" value="password-login">Entrar</button>
+              <button type="submit" class="ghost-button" name="auth-mode" value="password-reset">Recuperar senha</button>
+              <button type="submit" class="ghost-button" name="auth-mode" value="otp">Enviar link</button>
+            </div>
+          </form>
+          <button id="sign-out" type="button" class="ghost-button hidden">Sair</button>
+          <button id="sync-now" type="button" class="ghost-button">Sincronizar</button>
+          <p id="auth-status" class="muted">Entre para sincronizar com o Supabase.</p>
+          <p id="sync-status" class="muted"></p>
+        </section>
+
+        <form id="event-form" class="panel compact-form">
+          <label>
+            Evento
+            <input id="event-name" name="name" type="text" placeholder="Nome do evento" required />
+          </label>
+          <label>
+            Data
+            <input id="event-date" name="date" type="date" />
+          </label>
+          <label>
+            Local
+            <input id="event-location" name="location" type="text" placeholder="Casa, cidade..." />
+          </label>
+          <button type="submit" class="primary-button">Criar evento</button>
+        </form>
+
+        <nav id="event-list" class="event-list" aria-label="Eventos"></nav>
+      </aside>
+
+      <main class="workspace">
+        <section class="topbar">
+          <div>
+            <p class="eyebrow">Evento selecionado</p>
+            <h2 id="event-title">Nenhum evento cadastrado</h2>
+            <p id="event-meta" class="muted">Crie um evento para começar.</p>
+          </div>
+          <div class="actions">
+            <button id="export-csv" type="button" class="ghost-button" disabled>CSV</button>
+            <button id="export-xls" type="button" class="ghost-button" disabled>Excel</button>
+            <button id="export-pdf" type="button" class="ghost-button" disabled>PDF</button>
+          </div>
+        </section>
+
+        <section id="empty-state" class="empty-state">
+          <h2>Organize compras por evento, artista e camarim.</h2>
+          <p>Cadastre o primeiro evento à esquerda. Depois adicione artistas, camarins e itens com quantidade e fornecedor.</p>
+        </section>
+
+        <section id="event-workspace" class="event-workspace hidden">
+          <div class="view-tabs" role="tablist" aria-label="Visões do evento">
+            <button id="tab-general" class="view-tab" type="button" data-view="general">Geral</button>
+            <button id="tab-dressing" class="view-tab active" type="button" data-view="dressing">Camarins</button>
+            <button id="tab-shopping" class="view-tab" type="button" data-view="shopping">Compras</button>
+          </div>
+
+          <section id="general-view" class="view-panel hidden">
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Resumo</p>
+                  <h3>Evento</h3>
+                </div>
+              </div>
+              <div class="summary-strip">
+                <div>
+                  <strong id="summary-artists">0</strong>
+                  <span>artistas</span>
+                </div>
+                <div>
+                  <strong id="summary-rooms">0</strong>
+                  <span>camarins</span>
+                </div>
+                <div>
+                  <strong id="summary-items">0</strong>
+                  <span>itens</span>
+                </div>
+                <div>
+                  <strong id="summary-pending">0</strong>
+                  <span>pendentes</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Resumo</p>
+                  <h3>Artistas</h3>
+                </div>
+              </div>
+              <div id="artist-summary-list" class="artist-summary-list"></div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Evento</p>
+                  <h3>Cadastro geral</h3>
+                </div>
+                <button class="danger-button" type="button" data-action="delete-event">Excluir evento</button>
+              </div>
+
+              <form id="artist-form" class="inline-form">
+                <input id="artist-name" type="text" placeholder="Nome do artista" required />
+                <button type="submit" class="primary-button">Adicionar artista</button>
+              </form>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Equipe</p>
+                  <h3>Responsáveis</h3>
+                </div>
+              </div>
+
+              <form id="buyer-form" class="inline-form">
+                <input id="buyer-name" type="text" placeholder="Nome do responsável" required />
+                <button type="submit" class="primary-button">Cadastrar</button>
+              </form>
+              <div id="buyer-list" class="buyer-list"></div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Compras</p>
+                  <h3>Locais de compra</h3>
+                </div>
+              </div>
+
+              <form id="store-form" class="inline-form">
+                <input id="store-name" type="text" placeholder="Mercado, farmácia, loja..." required />
+                <button type="submit" class="primary-button">Cadastrar</button>
+              </form>
+              <div id="store-list" class="buyer-list"></div>
+            </div>
+          </section>
+
+          <section id="dressing-view" class="view-panel">
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Camarins</p>
+                  <h3>Artistas e camarins</h3>
+                </div>
+              </div>
+
+              <div id="artist-tabs" class="artist-tabs" role="tablist" aria-label="Artistas"></div>
+              <div id="artist-list" class="artist-list"></div>
+            </div>
+          </section>
+
+          <section id="shopping-view" class="view-panel hidden">
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Resumo</p>
+                  <h3>Checklist de compras</h3>
+                </div>
+                <select id="status-filter" aria-label="Filtrar status">
+                  <option value="all">Todos</option>
+                  <option value="pending">Pendentes</option>
+                  <option value="done">Comprados</option>
+                </select>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Item</th>
+                      <th>Qtd.</th>
+                      <th>Onde comprar</th>
+                      <th>Responsável</th>
+                      <th>Valor</th>
+                      <th>Artista</th>
+                      <th>Camarim</th>
+                    </tr>
+                  </thead>
+                  <tbody id="shopping-table"></tbody>
+                </table>
+              </div>
+
+              <div class="buyer-balance">
+                <div class="section-head">
+                  <div>
+                    <p class="eyebrow">Saldo</p>
+                    <h3>Compras por responsável</h3>
+                  </div>
+                </div>
+                <div id="buyer-balance"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
